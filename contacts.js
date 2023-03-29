@@ -2,38 +2,34 @@ const fsp = require("fs/promises");
 const { nanoid } = require("nanoid");
 const path = require("path");
 
-// console.log(path.resolve('contacts.json'))
 const contactsPath = path.join(__dirname, "db/contacts.json");
-// console.log(contactsPath);
+
+async function rewriteContactsList(a) {
+  const newList = await fsp.writeFile(contactsPath, JSON.stringify(a, null, 2));
+  return newList;
+};
 
 async function listContacts() {
-  const contacts = await fsp.readFile(contactsPath);
-  const parsedContacts = JSON.parse(contacts);
-  // console.log(parsed);
+  const allContacts = await fsp.readFile(contactsPath);
+  const parsedContacts = JSON.parse(allContacts);
   return parsedContacts;
-}
+};
 
 async function getContactById(contactId) {
-  const contacts = await listContacts();
-  const contactById = contacts.find((c) => c.id === contactId);
+  const allContacts = await listContacts();
+  const contactById = allContacts.find(({ id }) => id === contactId);
   if (!contactById) {
     return null;
-    // throw new Error('The contact is not found')
   }
   console.log(contactById);
   return contactById;
-}
+};
 
 async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const contactIndex = await parsed.findIndex((c) => c.id === contactId);
-    if (contactIndex === -1) {
-        return null;
-  }
-    const newList = await fsp.writeFile("./db/contacts.json", data);
-  result.splice(contactIndex, 1);
-  console.log();
-}
+  const allContacts = await listContacts();
+  const contactsFilter = await allContacts.filter(({ id }) => id !== contactId);
+  rewriteContactsList(contactsFilter);
+};
 
 async function addContact(name, email, phone) {
   const newContact = {
@@ -43,13 +39,15 @@ async function addContact(name, email, phone) {
     phone,
   };
   console.log(newContact);
-  const contacts = await listContacts();
-  contacts.push(newContact);
-  await fsp.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  const allContacts = await listContacts();
+  allContacts.push(newContact);
+  rewriteContactsList(allContacts);
   return newContact;
-}
+};
 
-// listContacts();
-// getContactById("vza2RIzNGIwutCVCs4mCL");
-// removeContact("vza2RIzNGIwutCVCs4mCL")
-addContact("Ivanka", "IvNagornyuk@gmail.com", "380-660-17-7234");
+module.exports = {
+    listContacts,
+    getContactById,
+    removeContact,
+    addContact,
+};
